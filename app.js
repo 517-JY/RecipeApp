@@ -2,6 +2,7 @@
   app.js -- This creates an Express webserver
 */
 
+
 // First we load in all of the packages we need for the server...
 const createError = require("http-errors");
 const express = require("express");
@@ -52,11 +53,19 @@ app.get("/", (req, res) => {
   res.render("index");
 });
 
-app.get("/demo", 
+app.get("/demo",
         function (req, res){res.render("demo");});
 
 app.get("/about", (request, response) => {
   response.render("about");
+});
+
+app.get("/quiz1", (request, response) => {
+  response.render("quiz1");
+});
+
+app.get("/grading", (request, response) => {
+  response.render("grading");
 });
 
 app.get("/form", (request,response) => {
@@ -67,6 +76,74 @@ app.post("/showformdata", (request,response) => {
   response.json(request.body)
 })
 
+app.get("/form2", (request,response) => {
+  response.render("form2")
+})
+
+
+app.post("/showNameAge", (request,response) => {
+  response.locals.name=request.body.fullname
+  response.locals.age =request.body.age
+  response.render("form2data")
+})
+
+
+
+app.post("/reflectFormData",(req,res) => {
+  res.locals.title = "Form Demo Page"
+  res.locals.name = req.body.fullname
+  res.locals.body = req.body
+  res.locals.demolist = [2,3,5,7,11,13]
+  res.render('reflectData')
+})
+
+
+
+app.get("/dataDemo", (request,response) => {
+  response.locals.name="Tim Hickey"
+  response.locals.vals =[1,2,3,4,5]
+  response.locals.people =[
+    {'name':'Tim','age':65},
+    {'name':'Yas','age':29}]
+  response.render("dataDemo")
+})
+
+app.get("/triangleArea", (request,response) => {
+  response.render("triangleArea")
+})
+
+app.post('/calcTriangleArea', (req,res) => {
+  const a = parseFloat(req.body.a) // converts form parameter from string to float
+  const b = parseFloat(req.body.b)
+  const c = parseFloat(req.body.c)
+  const s = (a+b+c)/2
+  const area = Math.sqrt(s*(s-a)*(s-b)*(s-c))
+  res.locals.a = a
+  res.locals.b = b
+  res.locals.c = c
+  res.locals.area = area
+  //res.json({'area':area,'s':s})
+  res.render('showTriangleArea')
+})
+
+app.get("/restaurant", (request,response) => {
+  response.render("restaurant")
+})
+
+app.post('/restaurantHelper', (req,res) => {
+  const mealCost = parseFloat(req.body.mealCost)
+  const tipRate = parseFloat(req.body.tipRate)
+  const numGuests = parseFloat(req.body.numGuests)
+  const costPerPerson=
+     ((mealCost + (mealCost * (tipRate / 100))) / numGuests).toFixed(2)
+  res.locals.mealCost = mealCost
+  res.locals.tipRate = tipRate
+  res.locals.numGuests = numGuests
+  res.locals.costPerPerson = costPerPerson
+  res.render('restaurantCost')
+})
+
+
 // Here is where we will explore using forms!
 
 
@@ -75,7 +152,7 @@ app.post("/showformdata", (request,response) => {
 // and send it back to the browser in raw JSON form, see
 // https://covidtracking.com/data/api
 // for all of the kinds of data you can get
-app.get("/c19", 
+app.get("/c19",
   async (req,res,next) => {
     try {
       const url = "https://covidtracking.com/api/v1/us/current.json"
