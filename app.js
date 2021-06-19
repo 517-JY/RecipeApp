@@ -13,6 +13,11 @@ const session = require("express-session");
 const axios = require("axios");
 var debug = require("debug")("personalapp:server");
 
+// load in covid data about MA up to 6/82021
+const covidDataMA = require("./public/data/cdc-covid19-MA.json")
+console.log('covidDataMA length is '+covidDataMA.length)
+
+
 // Now we create the server
 const app = express();
 
@@ -143,25 +148,58 @@ app.post('/restaurantHelper', (req,res) => {
   res.render('restaurantCost')
 })
 
+let todoItems = []
+
+app.get('/todo', (req,res) => {
+  res.locals.todoItems = todoItems
+  res.render('todo')
+})
+
+app.post('/storeTodo',(req,res) => {
+  const todoitem = req.body.todoitem
+  todoItems = todoItems.concat({'todo':todoitem})
+  console.log("Inside storeTodo")
+  console.dir(todoItems)  // debug step ..
+  res.locals.todoItems = todoItems
+  res.render('todo')
+})
 
 // Here is where we will explore using forms!
 
 
 
-// this example shows how to get the current US covid data
+// this example shows how to get the US covid data from the CDC
 // and send it back to the browser in raw JSON form, see
-// https://covidtracking.com/data/api
-// for all of the kinds of data you can get
+// https://dev.socrata.com/foundry/data.cdc.gov/9mfq-cb36
+//
 app.get("/c19",
   async (req,res,next) => {
     try {
-      const url = "https://covidtracking.com/api/v1/us/current.json"
+      const url = "https://data.cdc.gov/resource/9mfq-cb36.json?state=MA"
       const result = await axios.get(url)
-      res.json(result.data)
+      const covidData = result.data.sort(covid_before)
+      console.log('covidData.length='+covidData.length)
+      //res.json(covidData.reverse())
+      res.locals.covidData = covidData
+      res.render('c19')
     } catch(error){
       next(error)
     }
 })
+
+// this function is used to sort the CDC covid data by state then by date
+// for two objects a and b, it returns -1 if a<b and 1 if a>b and 0 if a==b
+// we use this in the result.data.sort(covid_before) to sort the covid data.
+function covid_before(a, b) {
+  var keyA = new Date(a.submission_date),
+    keyB = new Date(b.submission_date);
+  // Compare the 2 dates
+  if (a.state<b.state) return -1;
+  if (a.state>b.state) return 1;
+  if (keyA < keyB) return -1;
+  if (keyA > keyB) return 1;
+  return 0;
+}
 
 // this shows how to use an API to get recipes
 // http://www.recipepuppy.com/about/api/
@@ -172,6 +210,27 @@ app.get("/omelet",
       const url = "http://www.recipepuppy.com/api/?i=onions,garlic&q=omelet&p=3"
       const result = await axios.get(url)
       res.json(result.data)
+    } catch(error){
+      next(error)
+    }
+})
+
+app.get('/recipe', (req,res) => {
+  res.render('recipe')
+})
+
+app.post("/getRecipes",
+  async (req,res,next) => {
+    try {
+      const food = req.body.food
+      const url = "http://www.recipepuppy.com/api/?q="+food+"&p=1"
+      const result = await axios.get(url)
+      console.dir(result.data)
+      console.log('results')
+      console.dir(result.data.results)
+      res.locals.results = result.data.results
+      //res.json(result.data)
+      res.render('showRecipes')
     } catch(error){
       next(error)
     }

@@ -1,0 +1,16 @@
+<%- include('bootheader') -%>
+
+<%- include('menubar') -%>
+
+    <div class="jumbotron">
+        <h1>Covid Data for MA</h1>
+    </div>
+    <% for(let i=0; i<10; i++){
+        n = covidData.length
+        d = covidData[n-1-i]  %>
+        <%= d['new_death'] %>  ---- <%= d['submission_date'] %><br>
+    <%}%>
+<pre><%= JSON.stringify(covidData,null,5) %></pre>
+
+
+<%- include('bootfooter') -%>

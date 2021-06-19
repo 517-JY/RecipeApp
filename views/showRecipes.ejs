@@ -1,0 +1,44 @@
+<%- include('bootheader') -%>
+
+<%- include('menubar') -%>
+
+<div class="jumbotron">
+    <h1>Recipe Finder</h1>
+    <p>This app gets its recipes from
+        <a href="http://www.recipepuppy.com">http://www.recipepuppy.com</a>
+        </p>
+</div>
+<img src="/images/cat.jpg" width="100">
+
+<form method="post" action="/getRecipes">
+    what do you want to make? (one word)
+    <input type="text" name="food"><br>
+    <input type="submit">
+</form>
+
+<% results.map((recipe) => {%>
+<div style="border-top:thick solid blue; margin:20; padding:10">
+    <h1 class="bg-warning"> <%= recipe.title %> </h1>
+    <a href="<%= recipe.href %>"> <%= recipe.href %> </a>
+    <div class="row">
+        <div class="col">
+            <img src="<%= recipe.thumbnail %>" width="200">
+            <br>
+
+        </div>
+        <div class="col">
+            <h2>Ingredient list</h2>
+            <ol>
+            <% recipe.ingredients.split(",").map((i) => {%>
+                <li> <%= i %>  </li>
+            <%})%>
+            </ol>
+        </div>
+    </div>
+</div>
+<%})%>
+
+<%= JSON.stringify(results) %>
+
+
+<%- include('bootfooter') -%>
